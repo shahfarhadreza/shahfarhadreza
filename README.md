@@ -5,3 +5,7 @@
 - 💬 Ask me about anything: DM me on Facebook! - facebook.com/shahfarhadrezaa
 - 📫 How to reach me: shuvodesh71@gmail.com
 - ⚡ Fun fact: Not much fun!
+
+***Socials***
+
+🖇️ LinkedIn in/shah-farhad-reza
