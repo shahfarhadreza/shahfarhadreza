@@ -6,7 +6,7 @@
 - 📫 How to reach me: 📧 shuvodesh71@gmail.com
 - 🎵 I also love music!
 
-[![Skills](https://skillicons.dev/icons?i=c,cpp,cs,java)](https://skillicons.dev)
+[![Skills](https://skillicons.dev/icons?i=cpp,cs,java,react,nodejs)](https://skillicons.dev)
 
 **Socials**
 
