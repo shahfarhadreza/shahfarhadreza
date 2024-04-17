@@ -6,6 +6,8 @@
 - 📫 How to reach me: 📧 shuvodesh71@gmail.com
 - 🎵 I also love music!
 
+[![Skills](https://skillicons.dev/icons?i=c,cpp,cs,java)](https://skillicons.dev)
+
 **Socials**
 
 ▶️ Youtube [iamfarhadreza](https://www.youtube.com/@iamfarhadreza)
