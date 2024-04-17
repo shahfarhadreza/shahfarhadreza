@@ -8,4 +8,4 @@
 
 ***Socials***
 
-🖇️ LinkedIn in/shah-farhad-reza
+🖇️ LinkedIn [in/shah-farhad-reza](https://www.linkedin.com/in/shah-farhad-reza/)
