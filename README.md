@@ -1,10 +1,15 @@
 ### 🚀 Hi, I’m Shah Farhad Reza 👋
 
-🎮 Lead Programmer @ [Your Company Name]
+🎮 Programmer @ Ghost Interactive
+
 🧠 Passionate about clean code, performance optimization & game systems design
+
 🔧 Working in Unity / C# / Tools development / Multiplayer / Shaders
+
 🌍 Based in Dhaka
+
 📬 Reach me at: shuvodesh71@gmail.com
+
 🎵 Off-hours: music lover & occasional composer
 
 💡 Always exploring better ways to build great games.
