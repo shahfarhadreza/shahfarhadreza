@@ -1,10 +1,14 @@
-### Hi there, I am Shah Farhad Reza 👋
+### 🚀 Hi, I’m Shah Farhad Reza 👋
 
-- 🔭 I am a passionate coder who loves open-source software!
-- 🌱 I am currently learning game development.
-- 🌎 Based in Dhaka.
-- 📫 How to reach me: 📧 shuvodesh71@gmail.com
-- 🎵 I also love music!
+🎮 Lead Programmer @ [Your Company Name]
+🧠 Passionate about clean code, performance optimization & game systems design
+🔧 Working in Unity / C# / Tools development / Multiplayer / Shaders
+🌍 Based in Dhaka
+📬 Reach me at: shuvodesh71@gmail.com
+🎵 Off-hours: music lover & occasional composer
+
+💡 Always exploring better ways to build great games.
+🗂️ Check out my pinned projects to see what I’ve been working on!
 
 [![Skills](https://skillicons.dev/icons?i=unity,cpp,cs,java,react,nodejs)](https://skillicons.dev)
 
