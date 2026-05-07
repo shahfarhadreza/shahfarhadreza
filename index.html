@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aronno Engine — C++ Game Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --dark: #0f0f0f;
+    --panel: #141414;
+    --border: #222222;
+    --amber: #e8930a;
+    --amber-dim: #7a4d06;
+    --amber-glow: rgba(232, 147, 10, 0.15);
+    --text: #d4cfc8;
+    --text-muted: #5a5550;
+    --text-dim: #8a8480;
+    --white: #f0ede8;
+    --red: #c0392b;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 3rem;
+    height: 64px;
+    background: rgba(8,8,8,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+    color: var(--white);
+  }
+
+  .nav-logo span { color: var(--amber); }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--amber); }
+
+  .nav-links a.cta {
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    padding: 0.4em 1em;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .nav-links a.cta:hover {
+    background: var(--amber);
+    color: var(--black);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+    padding-top: 64px;
+  }
+
+  .hero-grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,147,10,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,147,10,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6rem 4rem 6rem 5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 2rem;
+    height: 1px;
+    background: var(--amber);
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 9vw, 9rem);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    color: var(--white);
+    margin-bottom: 0.2em;
+  }
+
+  .hero-title .engine-word {
+    color: var(--amber);
+    display: block;
+  }
+
+  .hero-subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 2.5rem;
+    margin-top: 0.8rem;
+  }
+
+  .hero-desc {
+    font-size: 1rem;
+    color: var(--text-dim);
+    max-width: 420px;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+  }
+
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    padding: 0.3em 0.8em;
+    background: rgba(232,147,10,0.05);
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .btn-primary {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--amber);
+    color: var(--black);
+    border: none;
+    padding: 1em 2em;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { background: #f5a61f; transform: translateY(-1px); }
+
+  .btn-ghost {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 1em 2em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+    display: inline-block;
+  }
+
+  .btn-ghost:hover { border-color: var(--amber); color: var(--amber); }
+
+  /* ─── HERO RIGHT / SCREENSHOT ─── */
+  .hero-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 3rem 4rem 2rem;
+    z-index: 2;
+  }
+
+  .hero-screenshot-frame {
+    position: relative;
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .frame-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--amber);
+    border-style: solid;
+    border-width: 0;
+    z-index: 3;
+  }
+
+  .frame-corner.tl { top: -8px; left: -8px; border-top-width: 2px; border-left-width: 2px; }
+  .frame-corner.tr { top: -8px; right: -8px; border-top-width: 2px; border-right-width: 2px; }
+  .frame-corner.bl { bottom: -8px; left: -8px; border-bottom-width: 2px; border-left-width: 2px; }
+  .frame-corner.br { bottom: -8px; right: -8px; border-bottom-width: 2px; border-right-width: 2px; }
+
+  .screenshot-label {
+    position: absolute;
+    top: -28px;
+    left: 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+
+  .screenshot-placeholder {
+    width: 100%;
+    aspect-ratio: 16/10;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screenshot-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(232,147,10,0.03) 0%, transparent 50%, rgba(232,147,10,0.05) 100%);
+  }
+
+  .placeholder-icon {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--amber-dim);
+  }
+
+  .placeholder-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,147,10,0.08) 0%, transparent 70%);
+    right: -100px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  /* ─── STAT BAR ─── */
+  .stat-bar {
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stat-item {
+    padding: 2rem 2.5rem;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--amber);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ─── SECTIONS ─── */
+  section {
+    padding: 6rem 5rem;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 1.5rem;
+    height: 1px;
+    background: var(--amber);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 4vw, 3.8rem);
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* ─── FEATURES GRID ─── */
+  .features {
+    background: var(--dark);
+  }
+
+  .features-header {
+    max-width: 600px;
+    margin-bottom: 4rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .feature-card {
+    background: var(--dark);
+    padding: 2.5rem 2rem;
+    position: relative;
+    transition: background 0.25s;
+  }
+
+  .feature-card:hover { background: var(--panel); }
+
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--amber);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .feature-card:hover::after { transform: scaleX(1); }
+
+  .feature-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--amber-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.2rem;
+  }
+
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    color: var(--amber);
+  }
+
+  .feature-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+
+  .feature-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ─── SCREENSHOTS SECTION ─── */
+  .screenshots { background: var(--black); }
+
+  .screenshots-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1px;
+    background: var(--border);
+    margin-top: 3rem;
+  }
+
+  .shot-frame {
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shot-frame.large { grid-column: span 2; }
+
+  .shot-inner {
+    aspect-ratio: 16/9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    background: var(--panel);
+    position: relative;
+  }
+
+  .shot-inner.tall { aspect-ratio: 16/7; }
+
+  .shot-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(232,147,10,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,147,10,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .shot-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 0.8rem 1.2rem;
+    background: rgba(8,8,8,0.8);
+    border-top: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .shot-caption::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: var(--amber);
+  }
+
+  /* ─── ARCHITECTURE ─── */
+  .architecture { background: var(--dark); }
+
+  .arch-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 5rem;
+    align-items: start;
+    margin-top: 3rem;
+  }
+
+  .arch-desc {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    line-height: 1.9;
+  }
+
+  .arch-desc p { margin-bottom: 1.2rem; }
+
+  .arch-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .arch-row {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .arch-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .arch-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .arch-row.cols-1 { grid-template-columns: 1fr; }
+
+  .arch-block {
+    background: var(--panel);
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    transition: background 0.2s;
+  }
+
+  .arch-block:hover { background: #1a1a1a; }
+
+  .arch-block-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .arch-block-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .arch-block.highlight { background: rgba(232,147,10,0.07); border-left: 2px solid var(--amber); }
+
+  /* ─── RENDERING ─── */
+  .rendering { background: var(--black); }
+
+  .rendering-layout {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 4rem;
+    align-items: start;
+    margin-top: 3rem;
+  }
+
+  .rendering-screenshot {
+    position: relative;
+  }
+
+  .rendering-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .render-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .render-item:last-child { border-bottom: none; }
+
+  .render-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--amber);
+    margin-top: 0.45rem;
+    flex-shrink: 0;
+  }
+
+  .render-item-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  .render-item-text strong {
+    display: block;
+    color: var(--white);
+    margin-bottom: 0.2rem;
+    font-size: 0.75rem;
+  }
+
+  /* ─── EDITOR SECTION ─── */
+  .editor-section { background: var(--dark); }
+
+  .editor-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-top: 3rem;
+  }
+
+  .editor-card {
+    background: var(--panel);
+    padding: 2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .editor-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--amber), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .editor-card:hover::before { opacity: 1; }
+
+  .editor-card-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  .editor-card-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.05em;
+  }
+
+  .editor-card-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* ─── VIDEO SECTION ─── */
+  .video-section {
+    background: var(--black);
+    text-align: center;
+    padding: 6rem 5rem;
+  }
+
+  .video-wrapper {
+    max-width: 800px;
+    margin: 3rem auto 0;
+    position: relative;
+  }
+
+  .video-embed {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .video-embed iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .video-glow {
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, var(--amber-dim), transparent, var(--amber-dim));
+    z-index: -1;
+    opacity: 0.4;
+  }
+
+  /* ─── LINKS / CTA ─── */
+  .links-section {
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 5rem;
+  }
+
+  .links-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .links-brand .nav-logo { font-size: 2rem; margin-bottom: 1rem; }
+
+  .links-brand p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 300px;
+    margin-bottom: 1.5rem;
+  }
+
+  .social-links { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .social-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    transition: color 0.2s;
+  }
+
+  .social-link:hover { color: var(--amber); }
+
+  .social-link svg { flex-shrink: 0; }
+
+  .links-col-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 1.2rem;
+  }
+
+  .links-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .links-col ul li a {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .links-col ul li a:hover { color: var(--text); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 1.5rem 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    background: var(--black);
+  }
+
+  footer p {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes ambientPulse {
+    0%, 100% { opacity: 0.08; }
+    50% { opacity: 0.14; }
+  }
+
+  .hero-left > * {
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .hero-left > *:nth-child(1) { animation-delay: 0.1s; }
+  .hero-left > *:nth-child(2) { animation-delay: 0.2s; }
+  .hero-left > *:nth-child(3) { animation-delay: 0.3s; }
+  .hero-left > *:nth-child(4) { animation-delay: 0.35s; }
+  .hero-left > *:nth-child(5) { animation-delay: 0.4s; }
+  .hero-left > *:nth-child(6) { animation-delay: 0.5s; }
+
+  .hero-glow { animation: ambientPulse 4s ease-in-out infinite; }
+
+  /* placeholder icon svg */
+  .ph-icon { width: 32px; height: 32px; opacity: 0.3; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--amber-dim); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo">ARONNO<span>.</span></div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#rendering">Rendering</a></li>
+    <li><a href="#editor">Editor</a></li>
+    <li><a href="#showcase">Showcase</a></li>
+    <li><a href="https://github.com/shahfarhadreza" target="_blank" class="cta">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero" style="padding:0; min-height:100vh;">
+  <div class="hero-grid-lines"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-left">
+    <div class="hero-eyebrow">C++ Game Engine · v1.0 · Alpha</div>
+
+    <h1 class="hero-title">
+      ARONNO
+      <span class="engine-word">ENGINE</span>
+    </h1>
+
+    <div class="hero-subtitle">// BUILT FROM THE GROUND UP IN C++</div>
+
+    <p class="hero-desc">
+      A multithreaded, deferred-rendering game engine featuring a full PBR pipeline, 
+      PhysX integration, and a fully featured editor — built with the engine itself.
+    </p>
+
+    <div class="hero-badges">
+      <span class="badge">Deferred Rendering</span>
+      <span class="badge">PhysX</span>
+      <span class="badge">PBR + IBL</span>
+      <span class="badge">Multithreaded</span>
+      <span class="badge">Graph Animation</span>
+      <span class="badge">HBAO</span>
+    </div>
+
+    <div class="hero-cta">
+      <a href="https://github.com/shahfarhadreza" target="_blank" class="btn-primary">View on GitHub</a>
+      <a href="https://www.youtube.com/@enginealchemy" target="_blank" class="btn-ghost">Watch Demo ↗</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-screenshot-frame">
+      <div class="screenshot-label">// Editor — Main Viewport</div>
+      <div class="frame-corner tl"></div>
+      <div class="frame-corner tr"></div>
+      <div class="frame-corner bl"></div>
+      <div class="frame-corner br"></div>
+      <div class="screenshot-placeholder">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="1"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <path d="M21 15l-5-5L5 21"/>
+        </svg>
+        <p class="placeholder-text">Replace with editor screenshot<br>Recommended: 1600 × 1000px</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STAT BAR ══ -->
+<div class="stat-bar">
+  <div class="stat-item">
+    <div class="stat-num">28+</div>
+    <div class="stat-label">Engine Features</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">2</div>
+    <div class="stat-label">Render Threads</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">C++</div>
+    <div class="stat-label">100% Native</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">PBR</div>
+    <div class="stat-label">Lighting Pipeline</div>
+  </div>
+</div>
+
+<!-- ══ FEATURES ══ -->
+<section class="features" id="features">
+  <div class="features-header">
+    <div class="section-label">Core Systems</div>
+    <h2 class="section-title">EVERYTHING YOU<br>NEED TO BUILD</h2>
+    <p style="color:var(--text-muted); font-size:0.95rem; line-height:1.8;">
+      Aronno Engine ships with all the foundational systems of a modern game engine — 
+      from a fully threaded render pipeline to a drag-and-drop asset workflow.
+    </p>
+  </div>
+
+  <div class="features-grid">
+    <!-- Card 1 -->
+    <div class="feature-card">
+      <div class="feature-num">01</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="feature-title">Scene · GameObject · Components</div>
+      <p class="feature-desc">Familiar, flexible ECS-style scene hierarchy with full component attachment, nested GameObjects, and runtime spawning.</p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="feature-card">
+      <div class="feature-num">02</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+      </div>
+      <div class="feature-title">C++ Scripting</div>
+      <p class="feature-desc">Maximum control and performance. Write game logic directly in C++ — no scripting overhead, no virtual machine.</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="feature-card">
+      <div class="feature-num">03</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 22v-4h6v4M9 6h6M9 10h6M9 14h4"/>
+        </svg>
+      </div>
+      <div class="feature-title">Asset System + .meta Files</div>
+      <p class="feature-desc">Every asset gets a metadata sidecar — persistent UUIDs, import settings, and dependency tracking baked in from day one.</p>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="feature-card">
+      <div class="feature-num">04</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+          <path d="M12 7v4M12 11l-5.5 6.5M12 11l5.5 6.5"/>
+        </svg>
+      </div>
+      <div class="feature-title">Graph-Based Animation</div>
+      <p class="feature-desc">Node-graph animation system for blending, state machines, and complex character motion — with a dedicated asset editor.</p>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="feature-card">
+      <div class="feature-num">05</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div class="feature-title">PhysX Physics</div>
+      <p class="feature-desc">Industry-standard NVIDIA PhysX integration for rigid bodies, collision shapes, triggers, and in-editor wireframe debugging.</p>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="feature-card">
+      <div class="feature-num">06</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <div class="feature-title">FBX + Custom Mesh Format</div>
+      <p class="feature-desc">Import industry-standard FBX files or use the engine's optimized static mesh format for faster runtime loading.</p>
+    </div>
+
+    <!-- Card 7 -->
+    <div class="feature-card">
+      <div class="feature-num">07</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 5h16v14H4z M9 9h6M9 13h4"/>
+        </svg>
+      </div>
+      <div class="feature-title">Asset-Based UI System</div>
+      <p class="feature-desc">Define UI layouts as assets — menus, HUDs, and overlays built visually and loaded at runtime without code recompilation.</p>
+    </div>
+
+    <!-- Card 8 -->
+    <div class="feature-card">
+      <div class="feature-num">08</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="feature-title">Multithreaded Architecture</div>
+      <p class="feature-desc">Main thread and dedicated render thread running in parallel — no blocking, no stalls, smooth frame delivery.</p>
+    </div>
+
+    <!-- Card 9 -->
+    <div class="feature-card">
+      <div class="feature-num">09</div>
+      <div class="feature-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div class="feature-title">Frustum Culling</div>
+      <p class="feature-desc">Per-frame frustum culling keeps the GPU busy with only what's visible — efficient for large, complex scenes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SCREENSHOTS ══ -->
+<section class="screenshots" id="showcase" style="padding-bottom:0;">
+  <div class="section-label">Showcase</div>
+  <h2 class="section-title">IN THE EDITOR</h2>
+
+  <div class="screenshots-grid">
+    <div class="shot-frame large">
+      <div class="shot-inner tall">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+        </svg>
+        <p class="placeholder-text">Replace with scene editor screenshot<br>Wide format · 1920 × 840px recommended</p>
+      </div>
+      <div class="shot-caption">Scene Editor — Full Viewport</div>
+    </div>
+
+    <div class="shot-frame">
+      <div class="shot-inner">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/>
+          <path d="M12 7v4M12 11l-5.5 6.5M12 11l5.5 6.5"/>
+        </svg>
+        <p class="placeholder-text">Animation Graph Editor<br>960 × 540px</p>
+      </div>
+      <div class="shot-caption">Animation Graph Asset Editor</div>
+    </div>
+
+    <div class="shot-frame">
+      <div class="shot-inner">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <p class="placeholder-text">Physics Debug View<br>960 × 540px</p>
+      </div>
+      <div class="shot-caption">Physics — Wireframe Debug Mode</div>
+    </div>
+
+    <div class="shot-frame">
+      <div class="shot-inner">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6M9 10h6M9 14h4"/>
+        </svg>
+        <p class="placeholder-text">Material Editor<br>960 × 540px</p>
+      </div>
+      <div class="shot-caption">Material Editor</div>
+    </div>
+
+    <div class="shot-frame">
+      <div class="shot-inner">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+        <p class="placeholder-text">UI Asset Editor<br>960 × 540px</p>
+      </div>
+      <div class="shot-caption">UI Asset Editor</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ARCHITECTURE ══ -->
+<section class="architecture" id="architecture">
+  <div class="section-label">Engine Architecture</div>
+  <h2 class="section-title">HOW IT'S BUILT</h2>
+
+  <div class="arch-layout">
+    <div>
+      <p class="arch-desc">
+        <p>Aronno Engine is designed around a clean separation between the main simulation thread and a dedicated rendering thread — decoupling game logic from GPU submission for maximum efficiency.</p>
+        <p>The scene hierarchy follows a GameObject → Component model, keeping code modular while remaining fully native C++. No scripting VM overhead, no reflection magic.</p>
+        <p>Assets are first-class citizens. Every resource has a UUID-backed .meta file that persists import settings and enables stable references across scenes and prefabs.</p>
+      </p>
+    </div>
+
+    <div class="arch-diagram">
+      <div class="arch-row cols-1">
+        <div class="arch-block highlight">
+          <div class="arch-block-title">Application Layer</div>
+          <div class="arch-block-sub">Engine loop · Input · Windowing</div>
+        </div>
+      </div>
+      <div class="arch-row cols-2">
+        <div class="arch-block">
+          <div class="arch-block-title">Main Thread</div>
+          <div class="arch-block-sub">Scene · Physics · C++ Scripts · UI</div>
+        </div>
+        <div class="arch-block">
+          <div class="arch-block-title">Render Thread</div>
+          <div class="arch-block-sub">Command submission · Draw calls · Post-FX</div>
+        </div>
+      </div>
+      <div class="arch-row cols-3">
+        <div class="arch-block">
+          <div class="arch-block-title">Scene Graph</div>
+          <div class="arch-block-sub">GameObject · Components · Prefabs</div>
+        </div>
+        <div class="arch-block">
+          <div class="arch-block-title">PhysX</div>
+          <div class="arch-block-sub">Rigid bodies · Colliders · Triggers</div>
+        </div>
+        <div class="arch-block">
+          <div class="arch-block-title">Animation</div>
+          <div class="arch-block-sub">Graph system · Blending · State machine</div>
+        </div>
+      </div>
+      <div class="arch-row cols-3">
+        <div class="arch-block">
+          <div class="arch-block-title">Asset System</div>
+          <div class="arch-block-sub">FBX · Static mesh · .meta files</div>
+        </div>
+        <div class="arch-block highlight">
+          <div class="arch-block-title">Deferred Pipeline</div>
+          <div class="arch-block-sub">G-Buffer · Lighting · Post-process</div>
+        </div>
+        <div class="arch-block">
+          <div class="arch-block-title">UI System</div>
+          <div class="arch-block-sub">Asset-based · HUD · Menus</div>
+        </div>
+      </div>
+      <div class="arch-row cols-1">
+        <div class="arch-block">
+          <div class="arch-block-title">Editor</div>
+          <div class="arch-block-sub">Built on the engine itself · All tools are engine features</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ RENDERING ══ -->
+<section class="rendering" id="rendering">
+  <div class="section-label">Rendering Pipeline</div>
+  <h2 class="section-title">DEFERRED PBR<br>RENDERER</h2>
+
+  <div class="rendering-layout">
+    <div class="rendering-screenshot">
+      <div class="shot-inner" style="aspect-ratio:16/10; border:1px solid var(--border);">
+        <svg class="ph-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+        <p class="placeholder-text">Rendering showcase screenshot<br>PBR scene with IBL + shadows</p>
+      </div>
+    </div>
+
+    <div class="rendering-list">
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>Deferred Rendering Pipeline</strong>G-Buffer pass separates geometry from lighting for efficient multi-light rendering.</div>
+      </div>
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>Cascaded Shadow Maps</strong>High-quality sun/directional light shadows across multiple cascade splits.</div>
+      </div>
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>Point Light Shadows</strong>Per-light shadow maps for dynamic point light sources in the scene.</div>
+      </div>
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>PBR Material System</strong>Physically based shading with metallic-roughness workflow for realistic surfaces.</div>
+      </div>
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>Image Based Lighting</strong>HDR environment maps for accurate ambient and specular contribution.</div>
+      </div>
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>HBAO</strong>Horizon-Based Ambient Occlusion for deep, contact-accurate shadowing in crevices.</div>
+      </div>
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>High Quality Bloom</strong>Inspired by Call of Duty: Advanced Warfare's post-process stack — multi-pass, physically plausible bloom.</div>
+      </div>
+      <div class="render-item">
+        <div class="render-dot"></div>
+        <div class="render-item-text"><strong>FXAA</strong>Fast approximate anti-aliasing for smooth edges without MSAA overhead.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ EDITOR ══ -->
+<section class="editor-section" id="editor">
+  <div class="section-label">Editor</div>
+  <h2 class="section-title">BUILT WITH<br>THE ENGINE ITSELF</h2>
+  <p style="color:var(--text-muted); font-size:0.9rem; max-width:580px; line-height:1.8; margin-top:1rem; margin-bottom:3rem;">
+    Aronno Editor is not a separate application — it's the engine running in editor mode. 
+    Every panel, every widget, every gizmo is rendered by the same pipeline used in-game.
+  </p>
+
+  <div class="editor-grid">
+    <div class="editor-card">
+      <div class="editor-card-num">01</div>
+      <div class="editor-card-title">Scene Editing</div>
+      <p class="editor-card-desc">Full Scene, GameObject, and Component editing with transform gizmos, hierarchy panel, and properties inspector.</p>
+    </div>
+    <div class="editor-card">
+      <div class="editor-card-num">02</div>
+      <div class="editor-card-title">In-Editor Play</div>
+      <p class="editor-card-desc">Hit play and your game runs inside the editor. Stop and your scene is exactly as you left it.</p>
+    </div>
+    <div class="editor-card">
+      <div class="editor-card-num">03</div>
+      <div class="editor-card-title">Drag & Drop Prefabs</div>
+      <p class="editor-card-desc">Drag prefab assets from the browser into the scene. Edit and propagate changes back to the prefab asset.</p>
+    </div>
+    <div class="editor-card">
+      <div class="editor-card-num">04</div>
+      <div class="editor-card-title">UI Asset Editor</div>
+      <p class="editor-card-desc">Visual editor for building UI layout assets — menus, HUDs, and overlays without writing code.</p>
+    </div>
+    <div class="editor-card">
+      <div class="editor-card-num">05</div>
+      <div class="editor-card-title">Animation Graph Editor</div>
+      <p class="editor-card-desc">Node-based graph editor for authoring animation state machines and blending logic.</p>
+    </div>
+    <div class="editor-card">
+      <div class="editor-card-num">06</div>
+      <div class="editor-card-title">Physics Debug View</div>
+      <p class="editor-card-desc">Toggle wireframe overlay to see all colliders and physics shapes overlaid on the live scene.</p>
+    </div>
+    <div class="editor-card">
+      <div class="editor-card-num">07</div>
+      <div class="editor-card-title">Material Editor</div>
+      <p class="editor-card-desc">Simple PBR material editor for setting surface properties directly on material assets.</p>
+    </div>
+    <div class="editor-card">
+      <div class="editor-card-num">08</div>
+      <div class="editor-card-title">Drag & Drop Import</div>
+      <p class="editor-card-desc">Drop FBX or texture files directly into the editor. Assets are imported, processed, and .meta files generated automatically.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ VIDEO ══ -->
+<section class="video-section">
+  <div class="section-label" style="justify-content:center;">Demo</div>
+  <h2 class="section-title">WATCH IT IN ACTION</h2>
+  <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.8; max-width:500px; margin:1rem auto 0;">
+    See the engine's editor, rendering pipeline, and physics system live on the Engine Alchemy YouTube channel.
+  </p>
+
+  <div class="video-wrapper">
+    <div class="video-glow"></div>
+    <div class="video-embed">
+      <iframe
+        src="https://www.youtube.com/embed?listType=user_uploads&list=enginealchemy"
+        title="Aronno Engine Demo"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;">
+    <a href="https://www.youtube.com/@enginealchemy" target="_blank" class="btn-ghost">Engine Alchemy Channel ↗</a>
+  </div>
+</section>
+
+<!-- ══ LINKS ══ -->
+<div class="links-section">
+  <div class="links-grid">
+    <div class="links-brand">
+      <div class="nav-logo">ARONNO<span style="color:var(--amber)">.</span></div>
+      <p>A C++ game engine built from the ground up — multithreaded, deferred rendering, PhysX, and a full editor. No compromises.</p>
+      <div class="social-links">
+        <a href="https://github.com/shahfarhadreza" target="_blank" class="social-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          github.com/shahfarhadreza
+        </a>
+        <a href="https://www.linkedin.com/in/shah-farhad-reza" target="_blank" class="social-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          linkedin — Shah Farhad Reza
+        </a>
+        <a href="https://www.youtube.com/@enginealchemy" target="_blank" class="social-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+          youtube — Engine Alchemy
+        </a>
+      </div>
+    </div>
+
+    <div class="links-col">
+      <div class="links-col-title">Architecture</div>
+      <ul>
+        <li><a href="#architecture">Engine Overview</a></li>
+        <li><a href="#architecture">Threading Model</a></li>
+        <li><a href="#architecture">Scene System</a></li>
+        <li><a href="#architecture">Asset Pipeline</a></li>
+        <li><a href="#architecture">C++ Scripting</a></li>
+      </ul>
+    </div>
+
+    <div class="links-col">
+      <div class="links-col-title">Rendering</div>
+      <ul>
+        <li><a href="#rendering">Deferred Pipeline</a></li>
+        <li><a href="#rendering">Shadow Maps</a></li>
+        <li><a href="#rendering">PBR + IBL</a></li>
+        <li><a href="#rendering">HBAO</a></li>
+        <li><a href="#rendering">Post Processing</a></li>
+      </ul>
+    </div>
+
+    <div class="links-col">
+      <div class="links-col-title">Editor</div>
+      <ul>
+        <li><a href="#editor">Scene Editor</a></li>
+        <li><a href="#editor">Animation Graph</a></li>
+        <li><a href="#editor">UI Editor</a></li>
+        <li><a href="#editor">Prefab System</a></li>
+        <li><a href="#editor">Material Editor</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p>© 2024 Shah Farhad Reza · Aronno Engine · All rights reserved</p>
+  <p>Built in C++ · Made with ❤️ from scratch</p>
+</footer>
+
+</body>
+</html>
